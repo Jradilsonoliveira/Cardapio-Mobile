@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Image } from 'react-native';
 
-// import api from '../../services/api';
-// import formatValue from '../../utils/formatValue';
-import { useIsFocused } from '@react-navigation/native';
+import api from '../../services/api';
+import formatValue from '../../utils/formatValue';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 
 
 import {
@@ -20,34 +20,39 @@ import {
   FoodPricing,
 } from './styles';
 
-interface Food {
+interface Product {
   id: number;
   name: string;
-  description: string;
   price: number;
-  thumbnail_url: string;
+  image: string;
   formattedPrice: string;
+}
+
+interface Food{
+  product: Product;
 }
 
 const Favorites: React.FC = () => {
   const [favorites, setFavorites] = useState<Food[]>([]);
   const isFocused = useIsFocused();
 
-  // useEffect(() => {
-  //   async function loadFavorites(): Promise<void> {
-  //     if (isFocused) {
-  //       const response = await api.get('/favorites');
-  //       setFavorites(
-  //         response.data.map((favorite: { Price: number; }) => ({
-  //           ...favorite,
-  //           Price: formatValue(favorite.Price),
-  //         })),
-  //       );
-  //     }
-  //   }
+  useEffect(() => {
+    async function loadFavorites(): Promise<void> {
+      if (isFocused) {
+        const {data} = await api.get('/favorites');
+        setFavorites(data);
+      }
+    }
 
-  //   loadFavorites();
-  // }, []);
+    loadFavorites();
+  }, []);
+
+  const navigation = useNavigation();
+
+  async function handleNavigate(id: number): Promise<void> {
+    // Navigate do ProductDetails page
+    navigation.navigate(`FoodDetails`, { id });
+  }
 
   return (
     <Container>
@@ -56,25 +61,27 @@ const Favorites: React.FC = () => {
       </Header>
 
       <FoodsContainer>
-        <FoodList
-          data={favorites}
-          keyExtractor={item => String(item.id)}
-          renderItem={({ item }) => (
-            <Food activeOpacity={0.6}>
+      <FoodList>
+          {favorites.map(food => (
+            <Food
+              key={food.product.id}
+              onPress={() => handleNavigate(food.product.id)}
+              activeOpacity={0.6}
+              testID={`food-${food.product.id}`}
+            >
               <FoodImageContainer>
                 <Image
                   style={{ width: 88, height: 88 }}
-                  source={{ uri: item.thumbnail_url }}
+                  source={{ uri: food.product.image }}
                 />
               </FoodImageContainer>
               <FoodContent>
-                <FoodTitle>{item.name}</FoodTitle>
-                <FoodDescription>{item.description}</FoodDescription>
-                <FoodPricing>{item.formattedPrice}</FoodPricing>
+                <FoodTitle>{food.product.name}</FoodTitle>
+                <FoodPricing>{`R$${food.product.price}`}</FoodPricing>
               </FoodContent>
             </Food>
-          )}
-        />
+          ))}
+          </FoodList>
       </FoodsContainer>
     </Container>
   );

@@ -4,9 +4,8 @@ import { FlatList } from 'react-native';
 interface Food {
   id: number;
   name: string;
-  description: string;
   price: number;
-  thumbnail_url: string;
+  image: string;
   formattedPrice: string;
 }
 
@@ -37,10 +36,9 @@ export const FoodsContainer = styled.View`
   margin-top: -60px;
 `;
 
-export const FoodList = styled(FlatList as new () => FlatList<Food>)`
+export const FoodList = styled.View`
   flex: 1;
   padding: 0 20px;
-
   margin-top: 16px;
 `;
 
